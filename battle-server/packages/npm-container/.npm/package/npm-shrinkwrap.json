@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "bezier-js": {
+      "version": "1.0.5"
+    },
+    "lodash": {
+      "version": "3.6.0"
+    }
+  }
+}
