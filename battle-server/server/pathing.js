@@ -21,6 +21,37 @@ Point.prototype = {
     return pointsByDistance[0];
   }
 }
+
+BezierCurve = function(endpointA, controlPoint, endpointB) {
+  this._curve = new Bezier(endpointA.x,endpointA.y, controlPoint.x,controlPoint.y, endpointB.x,endpointB.y); 
+  this._arclength = this._curve.length();
+}
+
+BezierCurve.prototype = {
+
+  flatten: function(averageUnitsPerSegment) {
+    var steps = Math.floor(this._arclength/averageUnitsPerSegment);
+    var LUT = this._curve.getLUT(steps);
+
+    var segments = [];
+    var totalSegmentLength = 0;
+
+    _.each(LUT, function(point,idx){
+      console.log("LUT",idx,point);
+
+      if (idx<LUT.length-1) {
+        var pointA = point;
+        var pointB = LUT[idx+1];
+        
+        var segment = new Segment(pointA,pointB);
+
+        segments.push(segment);
+      }
+    });
+
+    return segments;
+  }
+}
   
 Segment = function(endpointA, endpointB) {
   this.a = endpointA;
@@ -55,7 +86,7 @@ Path.prototype = {
   },
 
 
-  getTweenPointsAlongPath: function (speed, tweenInterval, startPoint) {
+  getTweenPoints: function (speed, tweenInterval, startPoint) {
 
   // given a unit's speed and tween interval,
   // what are all the tween points along the path?

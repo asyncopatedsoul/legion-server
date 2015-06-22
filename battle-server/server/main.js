@@ -1,33 +1,13 @@
 
-var curve = new Bezier(150,40 , 80,30 , 105,150);
-var arclength = curve.length();
-console.log("length",arclength);
 
-var steps = Math.floor(arclength/5);
-var LUT = curve.getLUT(steps);
+var endpointA = new Point(150,40), endpointB = new Point(105,150), controlPoint = new Point(80,30);
 
-var segments = [];
-var totalSegmentLength = 0;
+var curve = new BezierCurve(endpointA,controlPoint,endpointB);
 
-_.each(LUT, function(point,idx){
-  console.log("LUT",idx,point);
-
-  if (idx<LUT.length-1) {
-    var pointA = point;
-    var pointB = LUT[idx+1];
-    
-    var segment = new Segment(pointA,pointB);
-
-    segments.push(segment);
-  }
-});
-
-var endpointA = new Point(150,40), endpointB = new Point(105,150);
-
-var path = new Path(endpointA,endpointB,segments);
+var path = new Path(endpointA,endpointB,curve.flatten(5));
 
 console.log("path Length",path.length);
 console.log("path segments", path.segments.length);
 
-var tweenPoints = path.getTweenPointsAlongPath(25,300,path.endpointA);
+var tweenPoints = path.getTweenPoints(10,300,path.endpointA);
 console.log("tweenPoints",tweenPoints);
