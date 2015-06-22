@@ -25,6 +25,7 @@ Point.prototype = {
 BezierCurve = function(endpointA, controlPoint, endpointB) {
   this._curve = new Bezier(endpointA.x,endpointA.y, controlPoint.x,controlPoint.y, endpointB.x,endpointB.y); 
   this._arclength = this._curve.length();
+  this.LUT = null;
 }
 
 BezierCurve.prototype = {
@@ -48,6 +49,8 @@ BezierCurve.prototype = {
         segments.push(segment);
       }
     });
+
+    this.LUT = LUT;
 
     return segments;
   }
