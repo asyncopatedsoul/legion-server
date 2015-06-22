@@ -27,3 +27,9 @@ run game loop:
     - with distance traveled along macro path, what is coordinate along micro path (flattened line segment)?
 
 
+Map setup
+
+Client requests map data
+Server sends map data:
+  - path data: arrays of points for lines
+  - terrain data: coordinates & properties of terrain objects
