@@ -1,56 +1,61 @@
+
 // pathing.js
 
-var curve = new Bezier(150,40 , 80,30 , 105,150);
-var arclength = curve.length();
-console.log("length",arclength);
+Point = function(x,y) {
+  this.x = x;
+  this.y = y;
+};
 
-var steps = Math.floor(arclength/5);
-var LUT = curve.getLUT(steps);
+Point.prototype = {
+  getCoordinate: function(){
+    return [this.x,this.y];
+  },
+  distanceFromPoint: function(point) {
+    return Math.sqrt( Math.pow( (point.x-this.x), 2) + Math.pow( (point.y-this.y), 2) );
+  },
+  closestPointAmongPoints: function(points) {
+    var pointsByDistance = _.sortBy(points,function(point){
+      return this.distanceFromPoint(point); 
+    },this);
 
-var segments = [];
-var totalSegmentLength = 0;
-
-_.each(LUT, function(point,idx){
-  console.log("LUT",idx,point);
-
-  if (idx<LUT.length-1) {
-    var pointA = point;
-    var pointB = LUT[idx+1];
-    var segmentLength = Math.sqrt( Math.pow(pointA.x-pointB.x,2) + Math.pow(pointA.y-pointB.y,2) );
-    console.log("length",segmentLength);
-
-    var segment = {a:pointA, b:pointB, length:segmentLength};
-
-    segments.push(segment);
-    totalSegmentLength+=segmentLength;
+    return pointsByDistance[0];
   }
-});
+}
+  
+Segment = function(endpointA, endpointB) {
+  this.a = endpointA;
+  this.b = endpointB;
 
-console.log("totalSegmentLength",totalSegmentLength);
+  this.length = Math.sqrt( Math.pow(this.a.x-this.b.x,2) + Math.pow(this.a.y-this.b.y,2) );
+  console.log("length",this.length);
+};
 
 // segments must be contiguous
 // enpoints must fall on segments
-var Path = function(endpointA, endpointB, segments) {
+Path = function(endpointA, endpointB, segments) {
   this.endpointA = endpointA;
   this.endpointB = endpointB;
   this.segments = segments;
+
+  this.length = this._calculateLength();
 };
 
 Path.prototype = {
 
-  getDistanceToEnpoint: function() {
+  _calculateLength:  function() {
+    var sumLength = 0;
 
+    _.each(this.segments,sumSegmentLength);
+    
+    return sumLength;
+
+    function sumSegmentLength(segment) {
+      sumLength+=segment.length;
+    }
   },
 
-  getClosestPointToEndpoints: function (point1, point2) {
 
-
-
-  }, 
-
-  
-
-  getTweenPointsAlongPathForSpeed: function (speed, tweenInterval, startPoint) {
+  getTweenPointsAlongPath: function (speed, tweenInterval, startPoint) {
 
   // given a unit's speed and tween interval,
   // what are all the tween points along the path?
@@ -68,31 +73,51 @@ Path.prototype = {
 
     tweenPositions.push(startPoint);
 
-    var distanceTraveledPerTween = speed * tweenInterval;
+    var distanceTraveledPerTween = speed * tweenInterval/1000;
     var segmentIndex = 0;
+    var remainderDistanceAlongSegment = 0;
 
     // if segment is less than remaining distance 
     // subtract segments from distance 
     // until remaining distance is less than current segment
 
-    do {
+    while (segmentIndex<this.segments.length-1) {
 
-      var distanceTraveled = distanceTraveledPerTween;
+      var distanceTraveled = distanceTraveledPerTween - remainderDistanceAlongSegment;
+      var proceedToNextSegment = true;
 
-      while (distanceTraveled > this.segments[segmentIndex]) {
-        distanceTraveled = distanceTraveled - this.segments[segmentIndex].length; 
-        segmentIndex++;
+      while (proceedToNextSegment) {
+
+        if (segmentIndex>this.segments.length-1) {
+          proceedToNextSegment = false;
+        } else if (distanceTraveled < this.segments[segmentIndex].length) {
+          proceedToNextSegment = false;
+        } else {
+          console.log("distance until next tween",distanceTraveled);
+          distanceTraveled-=this.segments[segmentIndex].length; 
+          segmentIndex++;
+          console.log("segment index",segmentIndex);
+        }
+
       }
 
-      console.log("distance remaining:", totalDistance);
-      console.log("segment index:",segmentIndex);
+      remainderDistanceAlongSegment = distanceTraveled;
 
-      // find point at distance along segment
-      var nextTweenPosition = this.getPointAtDistanceAlongSegment(distanceTraveled);
+      console.log("distance remaining:", remainderDistanceAlongSegment);
       
-      tweenPositions.push(nextTweenPosition);
 
-    } while (segmentIndex<this.segments.length-1)
+      if (segmentIndex<this.segments.length-1) {
+
+        console.log("tween position at segment",segmentIndex);
+        // find point at distance along segment
+        var nextTweenPosition = this.getPointAtDistanceAlongSegment(distanceTraveled,segmentIndex,startPoint);
+        tweenPositions.push(nextTweenPosition);
+        segmentIndex++;
+        console.log("segment index",segmentIndex);
+      }
+      
+
+    } 
     // continue to calculate positions until at final segment
     
     var endPoint = (startPoint==this.endpointA) ? this.endpointB : endpointA;
@@ -103,22 +128,19 @@ Path.prototype = {
     return tweenPositions;
   },
 
+
   // how to determine which point of the segment is the origin?
   // the origin is the point closese to the origin of the path
-  getPointAtDistanceAlongSegment: function (distance, segmentIndex) {
+  getPointAtDistanceAlongSegment: function (distance, segmentIndex, originEndpoint) {
 
-    var currentSegment = this.segments[segmentIndex];
-    var targetOrigin = this.getClosestPointToEndpoints();
+    var segment = this.segments[segmentIndex];
+    var targetOrigin = originEndpoint.closestPointAmongPoints([segment.a,segment.b]);
 
     // with current segment
     // get point at distance along line
     // y - y1 = m(x - x1)
 
     var slope = (segment.a.y - segment.b.y) / (segment.a.x - segment.b.x);
-
-    // which point is higher?
-    var originLow = (segment.a.y>segment.b.y) ? segment.b : segment.a;
-    var originHigh = (segment.a.y>segment.b.y) ? segment.a : segment.b;
 
     // y = slope * x;
 
@@ -128,22 +150,56 @@ Path.prototype = {
     // distance = hypotenuse
     // if slope is positive
 
-    // opposite = y 
-    // tan angle = y / distance
-    // y = distance * tan angle
-    var deltaY = totalDistance * Math.tan(angle);
-
     // adjacent = x
     // cos angle = x / distance
     // x = distance * cos angle
-    var deltaX = totalDistance * Math.cos(angle);
+    var deltaX = distance * Math.cos(angle);
+    console.log("deltaX",deltaX);
 
-    var pointAlongPath = {};
+    // opposite = y 
+    // sin angle = y / distance
+    // y = distance * sin angle
+    var deltaY = distance * Math.sin(angle);
+    console.log("deltaY",deltaY);
 
+    // how to apply deltaX and deltaY to origin?
+    var targetX, targetY;
+
+    // targetX
+    if (segment.a.y==segment.b.y) {
+      targetX = targetOrigin.x;
+    } else {
+      var originLeft = (segment.a.x>segment.b.x) ? segment.b : segment.a;
+      var originRight = (segment.a.x>segment.b.x) ? segment.a : segment.b;
+
+      if ( (targetOrigin==originLeft && slope>0) || (targetOrigin==originRight && slope<0) ) {
+        targetX = targetOrigin.x + deltaX;
+      } else if ( (targetOrigin==originRight && slope>0) || (targetOrigin==originLeft && slope<0) ) {
+        targetX = targetOrigin.x - deltaX;
+      }
+    }
+
+    // targetY
+    if (segment.a.x==segment.b.x) {
+      targetY = targetOrigin.y;
+    } else {
+      var originLow = (segment.a.y>segment.b.y) ? segment.b : segment.a;
+      var originHigh = (segment.a.y>segment.b.y) ? segment.a : segment.b;
+
+      if ( targetOrigin==originLow ) {
+        targetY = targetOrigin.y + deltaY;
+      } else if ( targetOrigin==originHigh ) {
+        targetY = targetOrigin.y - deltaY;
+      }
+    }
+
+    var pointAlongPath = new Point(targetX,targetY);
+
+    return pointAlongPath;
   }
 };
 
-var Unit = function(config) {
+Unit = function(config) {
   this.speed = config.speed;
   this.position = config.position || { x:0, y:0 };
   this.rallyPoint = null;
