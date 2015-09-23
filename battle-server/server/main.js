@@ -1,4 +1,7 @@
 
+// BUILD MAP
+
+// DEFINE PATHS
 
 var endpointA = new Point(150,40), endpointB = new Point(105,150), controlPoint = new Point(80,30);
 
@@ -18,8 +21,20 @@ var websocketDelegate = new WebSocketDelegate(9999,eventEmitter);
 
 eventEmitter.emit("broadcastToClient",{topic:"mapData",body:curve.LUT});
 
-// create card
+// DEFINE RALLY POINTS
 
-// 
+// CREATE CARDS
+
+// DEPLOY CARD AT RALLY POINT
+
+// SPAWN UNITS
 
 eventEmitter.emit();
+
+// UNIT MOVES
+
+// UNIT REACHES RALLY POINT, HQ
+
+// UNIT REMOVED FROM MAP
+
+// ENEMY HQ REDUCED

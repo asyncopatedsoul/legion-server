@@ -29,6 +29,12 @@ run game loop:
 
 Map setup
 
+- on game loop update
+  each unit advances to its next tween point
+  Map gets position of all units
+  All units' positions sent to client
+  client animates tween
+
 Client requests map data
 Server sends map data:
   - path data: arrays of points for lines

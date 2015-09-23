@@ -27,5 +27,10 @@
     }
   ],
   "cards": [
+    {
+      "class":"elf",
+      "squadNumber": 5,
+      "deployTime": 1500
+    }
   ]
 }

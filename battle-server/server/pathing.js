@@ -72,6 +72,8 @@ Path = function(endpointA, endpointB, segments) {
   this.segments = segments;
 
   this.length = this._calculateLength();
+
+  this.map = null;
 };
 
 Path.prototype = {
@@ -231,15 +233,4 @@ Path.prototype = {
 
     return pointAlongPath;
   }
-};
-
-Unit = function(config) {
-  this.speed = config.speed;
-  this.position = config.position || { x:0, y:0 };
-  this.rallyPoint = null;
-
-}
-
-Unit.prototype = {
-
 };
