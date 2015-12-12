@@ -13,16 +13,16 @@ Card = function(config) {
   this.factory = new UntiFactory();
 
   this.gameWorld = null;
-  
+
 }
 
 Card.prototype = {
 
   deployToField: function(rallyPoint) {
 
-    for (var n=0;n<this.config.squadNumber;n++;) {
+    for (var n=0;n<this.config.squadNumber;n++) {
       var unit = new Unit(this.gameWorld.unitClassConfig[this.config.class]);
-      
+
       this.gameWorld.addUnit(unit);
       this.gameWorld.map.spawnUnitAtLocation(rallyPoint);
 

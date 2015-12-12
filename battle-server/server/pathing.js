@@ -2,6 +2,8 @@
 // pathing.js
 
 Point = function(x,y) {
+  //console.log("point: " + x + y);
+  //this.vec = new b2Vec2(x, y);
   this.x = x;
   this.y = y;
 };
@@ -15,7 +17,7 @@ Point.prototype = {
   },
   closestPointAmongPoints: function(points) {
     var pointsByDistance = _.sortBy(points,function(point){
-      return this.distanceFromPoint(point); 
+      return this.distanceFromPoint(point);
     },this);
 
     return pointsByDistance[0];
@@ -23,12 +25,29 @@ Point.prototype = {
 }
 
 BezierCurve = function(endpointA, controlPoint, endpointB) {
-  this._curve = new Bezier(endpointA.x,endpointA.y, controlPoint.x,controlPoint.y, endpointB.x,endpointB.y); 
+  this._curve = new Bezier(endpointA.x,endpointA.y, controlPoint.x,controlPoint.y, endpointB.x,endpointB.y);
+  //this._curve = new Bezier(endpointA, controlPoint, endpointB);
   this._arclength = this._curve.length();
   this.LUT = null;
 }
 
 BezierCurve.prototype = {
+
+  getDerivative: function(pointInTime) {
+    return this._curve.derivative(pointInTime);
+  },
+
+  getNormal: function(pointInTime) {
+    return this._curve.normal(pointInTime);
+  },
+
+  compute: function(pointInTime) {
+    return [this._curve.compute(pointInTime).x, this._curve.compute(pointInTime).y];
+  },
+
+  get: function(pointInTime) {
+    return this._curve.compute(pointInTime);
+  },
 
   flatten: function(averageUnitsPerSegment) {
     var steps = Math.floor(this._arclength/averageUnitsPerSegment);
@@ -43,7 +62,7 @@ BezierCurve.prototype = {
       if (idx<LUT.length-1) {
         var pointA = point;
         var pointB = LUT[idx+1];
-        
+
         var segment = new Segment(pointA,pointB);
 
         segments.push(segment);
@@ -55,7 +74,7 @@ BezierCurve.prototype = {
     return segments;
   }
 }
-  
+
 Segment = function(endpointA, endpointB) {
   this.a = endpointA;
   this.b = endpointB;
@@ -82,7 +101,7 @@ Path.prototype = {
     var sumLength = 0;
 
     _.each(this.segments,sumSegmentLength);
-    
+
     return sumLength;
 
     function sumSegmentLength(segment) {
@@ -113,8 +132,8 @@ Path.prototype = {
     var segmentIndex = 0;
     var remainderDistanceAlongSegment = 0;
 
-    // if segment is less than remaining distance 
-    // subtract segments from distance 
+    // if segment is less than remaining distance
+    // subtract segments from distance
     // until remaining distance is less than current segment
 
     while (segmentIndex<this.segments.length-1) {
@@ -130,7 +149,7 @@ Path.prototype = {
           proceedToNextSegment = false;
         } else {
           console.log("distance until next tween",distanceTraveled);
-          distanceTraveled-=this.segments[segmentIndex].length; 
+          distanceTraveled-=this.segments[segmentIndex].length;
           segmentIndex++;
           console.log("segment index",segmentIndex);
         }
@@ -140,7 +159,7 @@ Path.prototype = {
       remainderDistanceAlongSegment = distanceTraveled;
 
       console.log("distance remaining:", remainderDistanceAlongSegment);
-      
+
 
       if (segmentIndex<this.segments.length-1) {
 
@@ -151,11 +170,11 @@ Path.prototype = {
         segmentIndex++;
         console.log("segment index",segmentIndex);
       }
-      
 
-    } 
+
+    }
     // continue to calculate positions until at final segment
-    
+
     var endPoint = (startPoint==this.endpointA) ? this.endpointB : endpointA;
 
     tweenPositions.push(endPoint);
@@ -192,7 +211,7 @@ Path.prototype = {
     var deltaX = distance * Math.cos(angle);
     console.log("deltaX",deltaX);
 
-    // opposite = y 
+    // opposite = y
     // sin angle = y / distance
     // y = distance * sin angle
     var deltaY = distance * Math.sin(angle);

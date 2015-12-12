@@ -1,14 +1,31 @@
 <head>
   <title>battle-server</title>
+
+
 </head>
 
 <body>
   <h1>Welcome to Meteor!</h1>
 
+  {{>draw}}
+  
   {{> hello}}
+
+
+
+  <script>
+
+</script>
+
+
 </body>
 
 <template name="hello">
   <button>Click Me</button>
   <p>You've pressed the button {{counter}} times.</p>
+</template>
+
+<template name="draw">
+  <!-- The canvas, where we draw stuff -->
+  <canvas width="600" height="400" id="myCanvas"></canvas>
 </template>

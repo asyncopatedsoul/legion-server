@@ -143,6 +143,17 @@
     "lodash": {
       "version": "3.6.0"
     },
+    "node-uuid": {
+      "version": "1.4.2"
+    },
+    "p2": {
+      "version": "0.7.1",
+      "dependencies": {
+        "poly-decomp": {
+          "version": "0.1.1"
+        }
+      }
+    },
     "socket.io": {
       "version": "1.3.5",
       "dependencies": {

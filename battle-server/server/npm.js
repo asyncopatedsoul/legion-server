@@ -3,5 +3,4 @@
 UUID = Meteor.npmRequire("node-uuid");
 Bezier = Meteor.npmRequire("bezier-js");
 EventEmitter = Meteor.npmRequire("events").EventEmitter;
-
-//console.log(Bezier);
+p2 = Meteor.npmRequire("p2");
